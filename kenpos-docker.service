@@ -1,0 +1,13 @@
+[Unit]
+Description=KENPOS Docker Container
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/docker start kenpos-app
+ExecStop=/usr/bin/docker stop kenpos-app
+ExecReload=/usr/bin/docker restart kenpos-app
+
+[Install]
+WantedBy=multi-user.target

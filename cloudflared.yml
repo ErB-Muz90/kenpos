@@ -1,0 +1,7 @@
+tunnel: 6a6d9bcf-c6c6-4f1e-a1b7-bb7ba8857995
+credentials-file: /home/elb/.cloudflared/6a6d9bcf-c6c6-4f1e-a1b7-bb7ba8857995.json
+
+ingress:
+  - hostname: pos.erunstech.top
+    service: http://localhost:8080
+  - service: http_status:404

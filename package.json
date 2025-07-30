@@ -3,23 +3,59 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "vite build && electron-builder",
+    "test": "jest"
   },
   "dependencies": {
+    "escpos": "^2.5.2",
     "framer-motion": "^11.3.19",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",
+    "node-hid": "^3.0.0",
     "qrcode": "^1.5.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "recharts": "^3.1.0"
+    "recharts": "^3.1.0",
+    "serialport": "^12.0.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.4",
+    "@types/jest": "^30.0.0",
     "@types/node": "^22.14.0",
+    "concurrently": "^8.0.0",
+    "electron": "^31.0.0",
+    "electron-builder": "^24.0.0",
+    "jest": "^30.0.5",
+    "jest-environment-jsdom": "^30.0.5",
+    "ts-jest": "^29.4.0",
     "typescript": "~5.8.2",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "wait-on": "^7.0.0"
+  },
+  "build": {
+    "appId": "com.kenpos.pos",
+    "productName": "KENPOS Point of Sale",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.business"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
   }
 }
