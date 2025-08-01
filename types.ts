@@ -1,3 +1,5 @@
+export type BusinessType = 'GeneralRetail' | 'Restaurant' | 'Salon' | 'Services';
+
 export interface Product {
   id: string;
   name: string;
@@ -10,6 +12,7 @@ export interface Product {
   costPrice?: number;
   stock: number;
   imageUrl: string;
+  unitOfMeasure: string;
 }
 
 export interface CartItem extends Product {
@@ -159,6 +162,8 @@ export interface User {
 }
 
 export interface Settings {
+    isSetupComplete: boolean;
+    businessType: BusinessType;
     businessInfo: {
         name: string;
         kraPin: string;

@@ -23,6 +23,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ onClose, onSave, product, c
         stock: 0,
         description: '',
         imageUrl: '',
+        unitOfMeasure: 'pc(s)',
     });
     
     const [settings] = useState({ tax: { vatRate: 16 }}); // Mock settings for VAT calc
@@ -39,13 +40,15 @@ const ProductModal: React.FC<ProductModalProps> = ({ onClose, onSave, product, c
                 productType: product.productType || 'Inventory',
                 stock: product.stock,
                 description: product.description || '',
-                imageUrl: product.imageUrl || ''
+                imageUrl: product.imageUrl || '',
+                unitOfMeasure: product.unitOfMeasure || 'pc(s)',
             });
         } else {
             // Reset for new product
             setFormData({
                 name: '', sku: '', category: '', price: 0, costPrice: 0, 
-                pricingType: 'exclusive', productType: 'Inventory', stock: 0, description: '', imageUrl: ''
+                pricingType: 'exclusive', productType: 'Inventory', stock: 0, description: '', imageUrl: '',
+                unitOfMeasure: 'pc(s)',
             });
         }
     }, [product]);
@@ -163,6 +166,28 @@ const ProductModal: React.FC<ProductModalProps> = ({ onClose, onSave, product, c
                                         {categories.map(cat => <option key={cat} value={cat} />)}
                                     </datalist>
                                 </div>
+                            </div>
+                             <div>
+                                <label htmlFor="unitOfMeasure" className="block text-sm font-medium text-slate-700">Unit of Measure</label>
+                                <input 
+                                    type="text" 
+                                    name="unitOfMeasure" 
+                                    id="unitOfMeasure" 
+                                    value={formData.unitOfMeasure} 
+                                    onChange={handleChange} 
+                                    required 
+                                    placeholder="e.g. pc(s), kg, m"
+                                    list="unit-list"
+                                    className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm" 
+                                />
+                                <datalist id="unit-list">
+                                    <option value="pc(s)" />
+                                    <option value="kg" />
+                                    <option value="g" />
+                                    <option value="m" />
+                                    <option value="ltr" />
+                                    <option value="hr" />
+                                </datalist>
                             </div>
                              <div>
                                 <label htmlFor="description" className="block text-sm font-medium text-slate-700">Description</label>

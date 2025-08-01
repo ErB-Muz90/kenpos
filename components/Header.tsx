@@ -12,9 +12,10 @@ interface HeaderProps {
     onLogout: () => void;
     products: Product[];
     currentEvent: string | null;
+    syncStatus?: { isSyncing: boolean; syncPaused: boolean; lastError: Error | null };
 }
 
-const Header: React.FC<HeaderProps> = ({ isOnline, queuedSalesCount, onMenuClick, currentUser, onLogout, products, currentEvent }) => {
+const Header: React.FC<HeaderProps> = ({ isOnline, queuedSalesCount, onMenuClick, currentUser, onLogout, products, currentEvent, syncStatus }) => {
     const [time, setTime] = useState(new Date());
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -63,6 +64,12 @@ const Header: React.FC<HeaderProps> = ({ isOnline, queuedSalesCount, onMenuClick
                     <span className="text-sm font-semibold text-slate-600 hidden sm:inline">{isOnline ? 'Online' : 'Offline'}</span>
                     {!isOnline && queuedSalesCount > 0 && (
                         <span className="text-xs bg-amber-200 text-amber-800 font-bold px-2 py-0.5 rounded-full">{queuedSalesCount}</span>
+                    )}
+                    {syncStatus?.isSyncing && (
+                        <span className="text-xs bg-blue-200 text-blue-800 font-bold px-2 py-0.5 rounded-full">Syncing...</span>
+                    )}
+                    {syncStatus?.lastError && (
+                        <span className="text-xs bg-red-200 text-red-800 font-bold px-2 py-0.5 rounded-full">Sync Error</span>
                     )}
                 </div>
 

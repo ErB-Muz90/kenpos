@@ -6,9 +6,11 @@ interface BusinessInfoSettingsProps {
     settings: Settings;
     onUpdateSettings: (settings: Partial<Settings>) => void;
     showToast: (message: string, type: ToastData['type']) => void;
+    isSetupWizard?: boolean;
+    onWizardNext?: () => void;
 }
 
-const BusinessInfoSettings: React.FC<BusinessInfoSettingsProps> = ({ settings, onUpdateSettings, showToast }) => {
+const BusinessInfoSettings: React.FC<BusinessInfoSettingsProps> = ({ settings, onUpdateSettings, showToast, isSetupWizard = false, onWizardNext }) => {
     const [formData, setFormData] = useState(settings.businessInfo);
     const [logoPreview, setLogoPreview] = useState<string | null>(settings.businessInfo.logoUrl);
 
@@ -33,6 +35,9 @@ const BusinessInfoSettings: React.FC<BusinessInfoSettingsProps> = ({ settings, o
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onUpdateSettings({ businessInfo: { ...formData, logoUrl: logoPreview || '' } });
+        if(onWizardNext) {
+            onWizardNext();
+        }
     };
 
     return (
@@ -79,9 +84,9 @@ const BusinessInfoSettings: React.FC<BusinessInfoSettingsProps> = ({ settings, o
                     </div>
                 </div>
             </div>
-            <div className="flex justify-end pt-6 border-t border-slate-200 mt-6">
+            <div className={`flex justify-end pt-6 ${!isSetupWizard && 'border-t border-slate-200 mt-6'}`}>
                  <motion.button type="submit" whileTap={{ scale: 0.95 }} className="bg-emerald-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-emerald-700 transition-colors shadow-md">
-                    Save Business Info
+                    {isSetupWizard ? 'Save & Continue' : 'Save Business Info'}
                 </motion.button>
             </div>
         </form>

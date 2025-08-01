@@ -5,7 +5,7 @@ import { Product, CartItem, Customer, Sale, View, Supplier, PurchaseOrder, Suppl
 import { MOCK_CUSTOMERS, MOCK_USERS, DEFAULT_SETTINGS, MOCK_AUDIT_LOGS } from './constants';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useThemeManager } from './hooks/useThemeManager';
-import * as db from './utils/offlineDb';
+import * as pouchDb from './utils/pouchDbService';
 
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -26,6 +26,7 @@ import ReceivePOModal from './components/purchases/ReceivePOModal';
 import AddToPOModal from './components/modals/AddToPOModal';
 import CreateQuotationForm from './components/quotations/CreateQuotationForm';
 import QuotationDetailView from './components/quotations/QuotationDetailView';
+import SetupWizard from './components/setup/SetupWizard';
 import { round, getPriceBreakdown } from './utils/vatCalculator';
 import EmailModal from './components/modals/EmailModal';
 
@@ -64,6 +65,7 @@ const App: React.FC = () => {
     const [settings, setSettings] = useLocalStorage<Settings>('kenpos_settings', DEFAULT_SETTINGS);
     const [auditLogs, setAuditLogs] = useLocalStorage<AuditLog[]>('kenpos_auditLogs', MOCK_AUDIT_LOGS);
     const [shifts, setShifts] = useLocalStorage<Shift[]>('kenpos_shifts', []);
+    const [syncStatus, setSyncStatus] = useState({ isSyncing: false, syncPaused: false, lastError: null });
     
     // --- Component-specific state ---
     const [cart, setCart] = useState<CartItem[]>([]);
@@ -110,7 +112,7 @@ const App: React.FC = () => {
 
     const updateQueuedCount = useCallback(async () => {
         try {
-            const count = await db.getQueuedOrderCount();
+            const count = await pouchDb.getQueuedOrderCount();
             setQueuedOrderCount(count);
         } catch (e) {
             console.error("Failed to update queued count:", e);
@@ -119,10 +121,10 @@ const App: React.FC = () => {
 
     useEffect(() => {
         const initializeApp = async () => {
-            await db.initDB();
+            await pouchDb.initLocalDB();
 
-            // Rehydrate cart from IndexedDB
-            const storedCart = await db.getCart();
+            // Rehydrate cart from PouchDB
+            const storedCart = await pouchDb.getCart();
             if (storedCart.length > 0) {
                 setCart(storedCart);
             }
@@ -135,7 +137,7 @@ const App: React.FC = () => {
         const handleOnline = async () => {
             setIsOnline(true);
             showToast('You are back online. Syncing pending sales...', 'info');
-            const { success, failed } = await db.syncPendingOrders();
+            const { success, failed } = await pouchDb.syncPendingOrders();
             if (success > 0) {
                 showToast(`Successfully synced ${success} offline sales.`, 'success');
             }
@@ -157,6 +159,38 @@ const App: React.FC = () => {
             window.removeEventListener('offline', handleOffline);
         };
     }, [showToast, updateQueuedCount]);
+    
+    // Update sync status periodically
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            if (typeof pouchDb.getSyncStatus === 'function') {
+                try {
+                    const status = pouchDb.getSyncStatus();
+                    setSyncStatus(status);
+                } catch (err) {
+                    console.error('Failed to get sync status:', err);
+                }
+            }
+        }, 1000);
+        
+        return () => clearInterval(interval);
+    }, []);
+    
+    // Update sync status periodically
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            if (typeof pouchDb.getSyncStatus === 'function') {
+                try {
+                    const status = pouchDb.getSyncStatus();
+                    setSyncStatus(status);
+                } catch (err) {
+                    console.error('Failed to get sync status:', err);
+                }
+            }
+        }, 1000);
+        
+        return () => clearInterval(interval);
+    }, []);
     
     // --- Core Business Logic Handlers ---
 
@@ -234,7 +268,7 @@ const App: React.FC = () => {
     
     // Persist cart to IndexedDB whenever it changes
     useEffect(() => {
-        db.saveCart(cart);
+        pouchDb.saveCart(cart);
     }, [cart]);
     
     // Prevent user from accessing unauthorized views
@@ -372,7 +406,7 @@ const App: React.FC = () => {
         if (isOnline) {
              setSales(prevSales => [newSale, ...prevSales]);
         } else {
-            db.queueOrder(newSale).then(updateQueuedCount);
+            pouchDb.queueOrder(newSale).then(updateQueuedCount);
         }
         
         addAuditLog('SALE_COMPLETE', `Completed sale ${newSale.id} for ${newSale.total.toFixed(2)}.`);
@@ -841,9 +875,9 @@ const App: React.FC = () => {
     // Data Management
     const handleBackupData = async () => {
         try {
-            await db.initDB();
-            const offlineCart = await db.getCart();
-            const offlineQueue = await db.getAllQueuedOrders();
+            await pouchDb.initDB();
+            const offlineCart = await pouchDb.getCart();
+            const offlineQueue = await pouchDb.getAllQueuedOrders();
 
             const backupData = {
                 products, customers, sales, suppliers, purchaseOrders,
@@ -886,8 +920,8 @@ const App: React.FC = () => {
             setShifts(backupData.shifts || []);
             
             // Restore IndexedDB data
-            await db.restoreCart(backupData.offlineCart || []);
-            await db.restoreQueue(backupData.offlineQueue || []);
+            await pouchDb.restoreCart(backupData.offlineCart || []);
+            await pouchDb.restoreQueue(backupData.offlineQueue || []);
             await updateQueuedCount();
 
             addAuditLog('RESTORE_DATA', 'System data restored from backup file.');
@@ -1004,6 +1038,19 @@ const App: React.FC = () => {
         return <AuthView onLogin={handleLogin} onSignUp={handleSignUp} isInitialSignUp={users.length === 0} />;
     }
 
+    if (!settings.isSetupComplete && currentUser?.role === 'Admin') {
+        return <SetupWizard 
+            settings={settings}
+            onUpdateSettings={updateSettings}
+            showToast={showToast}
+            onSetupComplete={() => {
+                const updatedSettings = { ...settings, isSetupComplete: true };
+                setSettings(updatedSettings);
+                showToast('Setup complete! Welcome to KenPOS™.', 'success');
+            }}
+        />;
+    }
+
     return (
         <div className="flex h-screen bg-slate-200 font-sans">
             {currentUser && (
@@ -1026,6 +1073,7 @@ const App: React.FC = () => {
                         onLogout={handleLogout}
                         products={products}
                         currentEvent={currentEvent}
+                        syncStatus={syncStatus}
                     />
                 )}
                 <main className="flex-1 overflow-y-auto bg-slate-100 relative">

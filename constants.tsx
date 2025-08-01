@@ -1,6 +1,7 @@
 
 
-import { Product, Customer, Supplier, PurchaseOrder, SupplierInvoice, User, Settings, AuditLog, Permission, Role, Quotation } from './types';
+import { Product, Customer, Supplier, PurchaseOrder, SupplierInvoice, User, Settings, AuditLog, Permission, Role, Quotation, BusinessType } from './types';
+import React from 'react';
 
 export const MOCK_PRODUCTS: Product[] = [];
 
@@ -21,6 +22,8 @@ export const MOCK_QUOTATIONS: Quotation[] = [];
 export const MOCK_AUDIT_LOGS: AuditLog[] = [];
 
 export const DEFAULT_SETTINGS: Settings = {
+    isSetupComplete: false,
+    businessType: 'GeneralRetail',
     businessInfo: {
         name: 'My Biashara Ltd.',
         kraPin: 'P000000000X',
@@ -70,6 +73,29 @@ export const DEFAULT_SETTINGS: Settings = {
         Cashier: ['view_pos', 'view_shift_report', 'view_customers'],
         Supervisor: ['view_dashboard', 'view_pos', 'view_inventory', 'edit_inventory', 'view_purchases', 'view_shift_report', 'view_customers', 'manage_customers', 'view_quotations', 'manage_quotations'],
         Accountant: ['view_dashboard', 'view_purchases', 'manage_purchases', 'view_ap', 'manage_ap', 'view_tax_reports', 'view_customers'],
+    }
+};
+
+export const BUSINESS_TYPES_CONFIG: { [key in BusinessType]: { name: string; description: string; icon: React.ReactNode; } } = {
+    GeneralRetail: {
+        name: 'General Retail',
+        description: 'For kiosks, shops, boutiques, hardware stores, or any business selling physical items.',
+        icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>,
+    },
+    Restaurant: {
+        name: 'Restaurant / Cafe',
+        description: 'For food businesses like restaurants, cafes, pizza shops, and fast-food joints.',
+        icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+    },
+    Salon: {
+        name: 'Salon / Spa',
+        description: 'For service businesses like hair salons, barber shops, nail bars, and spas.',
+        icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879a1 1 0 01-1.414 0L9 12m0 0l2.879-2.879a1 1 0 011.414 0L15 11" /></svg>,
+    },
+    Services: {
+        name: 'Professional Services',
+        description: 'For project-based work like tailors, interior designers, consultants, and agencies.',
+        icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>,
     }
 };
 

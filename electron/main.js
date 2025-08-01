@@ -1,11 +1,16 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import { fileURLToPath } from 'url';
 import path from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import { SerialPort } from 'serialport';
 import EscPosEncoder from 'escpos';
 import HID from 'node-hid';
+import electronSquirrelStartup from 'electron-squirrel-startup';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) {
+if (electronSquirrelStartup) {
   app.quit();
 }
 
